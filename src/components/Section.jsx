@@ -1,10 +1,12 @@
 import Reveal from './Reveal'
 
-export default function Section({ id, eyebrow, title, bg, children, kicker, action }) {
+export default function Section({ id, eyebrow, title, bg, children, kicker, action, tone = 'default' }) {
+  const isAccent = tone === 'accent'
   return (
     <section
       id={id}
-      style={{ background: bg || 'transparent', padding: 'var(--pad-y) 0', borderTop: '1px solid var(--line)' }}
+      className={isAccent ? 'section-accent' : undefined}
+      style={{ background: isAccent ? undefined : (bg || 'transparent'), padding: 'var(--pad-y) 0', borderTop: '1px solid var(--line)' }}
     >
       <div style={{ maxWidth: 'var(--container)', margin: '0 auto', padding: '0 var(--pad-x)' }}>
         {(eyebrow || title) && (

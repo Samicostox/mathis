@@ -4,7 +4,7 @@ import Icon from './Icon'
 
 export default function Socials() {
   return (
-    <Section id="socials" eyebrow="03" title="Ailleurs.">
+    <Section id="socials" eyebrow="04" title="Ailleurs" bg="var(--bg-2)">
       <div className="socials-grid grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: '1px solid var(--line)' }}>
         {MC_SOCIAL.map((s, i) => (
           <a

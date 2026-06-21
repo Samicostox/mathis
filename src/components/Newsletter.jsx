@@ -10,13 +10,15 @@ export default function Newsletter() {
   return (
     <Section
       id="newsletter"
-      eyebrow="08"
+      eyebrow="05"
+      tone="accent"
       title={<>La newsletter,<br />sans spam.</>}
       kicker="Une dizaine d'envois par an, uniquement quand il y a du neuf — dates, vidéos, spectacles. Double opt-in, RGPD."
     >
       <Reveal>
         {!sent ? (
           <form
+            data-accent-fill
             onSubmit={(e) => { e.preventDefault(); if (email) setSent(true) }}
             className="grid"
             style={{ gridTemplateColumns: '1fr auto', border: '1px solid var(--line)', maxWidth: 720 }}
@@ -32,8 +34,8 @@ export default function Newsletter() {
             </button>
           </form>
         ) : (
-          <div className="flex items-center gap-5" style={{ border: '1px solid var(--accent)', padding: '28px', maxWidth: 720 }}>
-            <div className="inline-flex items-center justify-center shrink-0" style={{ width: 40, height: 40, background: 'var(--accent)', color: '#000' }}>
+          <div data-accent-box className="flex items-center gap-5" style={{ border: '1px solid var(--accent)', padding: '28px', maxWidth: 720 }}>
+            <div data-accent-icon className="inline-flex items-center justify-center shrink-0" style={{ width: 40, height: 40, background: 'var(--accent)', color: '#000' }}>
               <Icon name="check" size={20} stroke={2.5} />
             </div>
             <div>

@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react'
-import { MC_UPCOMING, MC_PAST } from '../data'
+import { MC_UPCOMING } from '../data'
 import Reveal from './Reveal'
 import BigButton from './BigButton'
-import Icon from './Icon'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -34,7 +33,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function DateRow({ item, past = false }) {
+function DateRow({ item }) {
   const d = formatDate(item.date)
   const soldOut = item.status === 'complet'
   return (
@@ -45,12 +44,11 @@ function DateRow({ item, past = false }) {
         gap: 'clamp(12px, 2vw, 28px)',
         padding: 'clamp(14px, 1.8vw, 22px) 0',
         borderBottom: '1px solid var(--line)',
-        opacity: past ? 0.45 : 1,
       }}
     >
       {/* Date */}
       <div className="flex items-baseline gap-2">
-        <span className="display" style={{ fontSize: 'clamp(32px, 4vw, 52px)', color: past ? 'var(--fg-dim)' : 'var(--fg)', lineHeight: 1 }}>
+        <span className="display" style={{ fontSize: 'clamp(32px, 4vw, 52px)', color: 'var(--fg)', lineHeight: 1 }}>
           {d.day}
         </span>
         <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-dim)', lineHeight: 1.4 }}>
@@ -61,24 +59,20 @@ function DateRow({ item, past = false }) {
 
       {/* City + venue */}
       <div className="date-info" style={{ minWidth: 0 }}>
-        <div className="display" style={{ fontSize: 'clamp(20px, 2.4vw, 30px)', color: past ? 'var(--fg-dim)' : 'var(--fg)', marginBottom: 4 }}>
+        <div className="display" style={{ fontSize: 'clamp(20px, 2.4vw, 30px)', color: 'var(--fg)', marginBottom: 4 }}>
           {item.city}
         </div>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1" style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 13, color: 'var(--fg-dim)' }}>
           <span>{item.venue}</span>
           <span style={{ color: 'var(--fg-mute)' }}>·</span>
           <span className="mono-ish" style={{ letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: 11 }}>{d.weekday} 20h30</span>
-          {!past && item.status && <StatusBadge status={item.status} />}
+          {item.status && <StatusBadge status={item.status} />}
         </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA — sold out shows only show the badge, no dead button */}
       <div className="flex items-center">
-        {past ? (
-          <span className="mono-ish" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-mute)' }}>Archive</span>
-        ) : soldOut ? (
-          <BigButton variant="dead" disabled icon={null}>Complet</BigButton>
-        ) : (
+        {!soldOut && (
           <BigButton href={item.url} target="_blank" variant={item.status === 'last' ? 'solid' : 'outline'} icon="arrow-up-right">
             Billetterie
           </BigButton>
@@ -88,9 +82,11 @@ function DateRow({ item, past = false }) {
   )
 }
 
+const INITIAL_LIMIT = 8
+
 export default function Dates() {
   const [filter, setFilter] = useState('all')
-  const [showPast, setShowPast] = useState(false)
+  const [showAll, setShowAll] = useState(false)
 
   const filtered = useMemo(() => {
     if (filter === 'paris') return MC_UPCOMING.filter((d) => d.city === 'Paris')
@@ -98,13 +94,16 @@ export default function Dates() {
     return MC_UPCOMING
   }, [filter])
 
+  const visible = showAll ? filtered : filtered.slice(0, INITIAL_LIMIT)
+  const hasMore = filtered.length > INITIAL_LIMIT && !showAll
+
   const parisCount = MC_UPCOMING.filter((d) => d.city === 'Paris').length
   const tourCount  = MC_UPCOMING.length - parisCount
 
   const Toggle = ({ value, label, n }) => (
     <button
       type="button"
-      onClick={() => setFilter(value)}
+      onClick={() => { setFilter(value); setShowAll(false) }}
       className="mono-ish inline-flex items-baseline gap-2 cursor-pointer"
       style={{
         background: filter === value ? 'var(--fg)' : 'transparent',
@@ -138,11 +137,10 @@ export default function Dates() {
               <h2 className="display" style={{ fontSize: 'clamp(44px, 7vw, 104px)', margin: 0 }}>
                 Dates
               </h2>
-              <p style={{ maxWidth: 520, marginTop: 20, color: 'var(--fg-dim)', fontSize: 16, lineHeight: 1.5 }}>
-                Toutes les dates en cours. La billetterie est gérée par chaque salle.
+              <p style={{ maxWidth: 520, marginTop: 16, color: 'var(--fg-dim)', fontSize: 16, lineHeight: 1.5, marginBottom: 0 }}>
+                Si t'es dans le coin.
               </p>
             </div>
-            {/* Toggles sit beside the title block */}
             <div className="flex flex-wrap gap-2" style={{ flexShrink: 0 }}>
               <Toggle value="all"   label="Toutes"  n={MC_UPCOMING.length} />
               <Toggle value="paris" label="Paris"   n={parisCount} />
@@ -154,38 +152,41 @@ export default function Dates() {
         {/* Date list */}
         <Reveal>
           <div style={{ borderTop: '1px solid var(--line)' }}>
-            {filtered.map((item, i) => (
-              <DateRow key={item.date + item.city + i} item={item} />
-            ))}
+            {visible.length === 0 ? (
+              <div style={{ padding: 'clamp(32px, 5vw, 64px) 0', color: 'var(--fg-dim)', fontFamily: 'Space Grotesk, sans-serif', fontSize: 17 }}>
+                Rien pour l'instant. Mais ça va revenir.
+              </div>
+            ) : (
+              visible.map((item, i) => (
+                <DateRow key={item.date + item.city + i} item={item} />
+              ))
+            )}
           </div>
         </Reveal>
 
-        {/* Past dates */}
-        <div style={{ marginTop: 32 }}>
-          <button
-            type="button"
-            onClick={() => setShowPast((v) => !v)}
-            className="mono-ish w-full flex justify-between items-center cursor-pointer"
-            style={{
-              background: 'transparent', color: 'var(--fg-dim)', border: 'none',
-              borderBottom: '1px solid var(--line)', padding: '13px 0',
-              fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
-            }}
-          >
-            <span>Dates passées ({MC_PAST.length})</span>
-            <Icon name={showPast ? 'minus' : 'plus'} size={15} />
-          </button>
-          <div style={{
-            display: 'grid',
-            gridTemplateRows: showPast ? '1fr' : '0fr',
-            transition: 'grid-template-rows .35s ease',
-            overflow: 'hidden',
-          }}>
-            <div style={{ overflow: 'hidden' }}>
-              {MC_PAST.map((item, i) => <DateRow key={i} item={item} past />)}
-            </div>
+        {/* Show all button */}
+        {hasMore && (
+          <div style={{ marginTop: 28 }}>
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="mono-ish cursor-pointer"
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--line)',
+                color: 'var(--fg)',
+                padding: '14px 28px',
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                transition: 'all .2s',
+              }}
+            >
+              Afficher toutes les dates ({filtered.length - INITIAL_LIMIT} de plus) →
+            </button>
           </div>
-        </div>
+        )}
 
       </div>
     </section>

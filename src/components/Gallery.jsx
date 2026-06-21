@@ -9,7 +9,7 @@ export default function Gallery() {
   const [open, setOpen] = useState(null)
 
   return (
-    <Section id="gallery" eyebrow="06" title="Galerie." kicker="Scène, coulisses, tournées. Tout en noir et blanc.">
+    <Section id="gallery" eyebrow="08" title="Galerie" bg="var(--bg-2)" kicker="Scène, coulisses, tournées. Tout en noir et blanc.">
       <div className="gallery-grid grid gap-2" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {Array.from({ length: MC_GALLERY_COUNT }).map((_, i) => (
           <Reveal key={i} delay={i * 40}>

@@ -4,6 +4,7 @@ import Icon from './Icon'
 const links = [
   { href: '#dates',   label: 'Dates' },
   { href: '#videos',  label: 'Vidéos' },
+  { href: '#socials', label: 'Ailleurs' },
   { href: '#bio',     label: 'Bio' },
   { href: '#contact', label: 'Contact' },
 ]

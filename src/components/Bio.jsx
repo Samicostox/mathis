@@ -1,42 +1,51 @@
 import Section from './Section'
 import Reveal from './Reveal'
-import PhotoPlaceholder from './PhotoPlaceholder'
 
-const stats = [
-  ['40+', 'dates en 2026'],
-  ['3', 'spectacles écrits'],
-  ['1,2M', 'sur YouTube'],
+const BIO_PARAGRAPHS = [
+  "J'ai commencé le stand-up et la vidéo en 2023. Trois ans plus tard, vous êtes de plus en plus à me suivre sur scène et à regarder ce que je fais en ligne.",
+  "Assez pour que je puisse quitter mon travail et devenir humoriste à temps plein. Sincèrement, merci.",
+  "Je travaille sur un premier spectacle. Il n'a pas d'autre prétention que de faire rire — mais j'espère que vous y trouverez un peu plus.",
 ]
 
 export default function Bio() {
   return (
-    <Section id="bio" eyebrow="05" title="Bio.">
-      <div className="bio-grid grid items-start" style={{ gridTemplateColumns: '1fr 1.2fr', gap: 'clamp(30px, 5vw, 80px)' }}>
-        <Reveal>
-          <PhotoPlaceholder label="PORTRAIT — STUDIO 2026" seed={33} ratio="4/5" />
-        </Reveal>
-        <Reveal delay={100}>
-          <div>
-            <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 'clamp(22px, 2.2vw, 30px)', lineHeight: 1.35, margin: '0 0 28px', color: 'var(--fg)' }}>
-              Né à Clermont en 1997. Monte sur scène en 2019, écrit le reste du temps. Premier spectacle joué au République en 2024, deuxième en tournée depuis janvier 2026.
+    <Section id="bio" eyebrow="07" title="Bio">
+      <Reveal>
+        {/* Large accent quote — dominates the section */}
+        <p
+          className="display"
+          style={{
+            fontSize: 'clamp(28px, 4vw, 56px)',
+            color: 'var(--accent)',
+            lineHeight: 1.1,
+            margin: '0 0 clamp(32px, 4vw, 56px)',
+            maxWidth: 900,
+            textTransform: 'none',
+            fontWeight: 900,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {BIO_PARAGRAPHS[0]}
+        </p>
+      </Reveal>
+      <Reveal delay={100}>
+        <div style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {BIO_PARAGRAPHS.slice(1).map((p, i) => (
+            <p
+              key={i}
+              style={{
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontSize: 'clamp(17px, 1.5vw, 21px)',
+                lineHeight: 1.6,
+                color: 'var(--fg-dim)',
+                margin: 0,
+              }}
+            >
+              {p}
             </p>
-            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-dim)', maxWidth: 560, margin: '0 0 28px' }}>
-              Un stand-up qui ne lâche rien. Ni sur la forme — textes ciselés, tempo serré — ni sur le fond : les gens, les lâchetés ordinaires, le pays tel qu'il va. Télérama parle d'une « voix qui cogne juste ». France Inter d'une « relève ».
-            </p>
-            <p style={{ fontSize: 17, lineHeight: 1.6, color: 'var(--fg-dim)', maxWidth: 560, margin: 0 }}>
-              Aussi podcasteur (<em style={{ color: 'var(--fg)', fontStyle: 'normal' }}>Entre Deux</em>, 1,2M d'auditeurs mensuels) et accessoirement mauvais joueur de tennis.
-            </p>
-            <div className="flex flex-wrap gap-8" style={{ marginTop: 40 }}>
-              {stats.map(([n, l]) => (
-                <div key={l}>
-                  <div className="display" style={{ fontSize: 42, color: 'var(--accent)' }}>{n}</div>
-                  <div className="mono-ish" style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-dim)', marginTop: 4 }}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-      </div>
+          ))}
+        </div>
+      </Reveal>
     </Section>
   )
 }

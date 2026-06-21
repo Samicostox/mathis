@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 
-export default function Reveal({ children, delay = 0, as: As = 'div', className = '', ...rest }) {
+export default function Reveal({ children, delay = 0, as: As = 'div', className = '', style, ...rest }) {
   const ref = useRef(null)
   const [shown, setShown] = useState(false)
 
@@ -19,7 +19,7 @@ export default function Reveal({ children, delay = 0, as: As = 'div', className 
     <As
       ref={ref}
       className={`reveal ${shown ? 'in' : ''} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{ transitionDelay: `${delay}ms`, ...style }}
       {...rest}
     >
       {children}

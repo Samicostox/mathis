@@ -42,7 +42,6 @@ body {
   font-family: "Inter", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.55;
-  overscroll-behavior-y: contain;
 }
 
 .hero-full {
@@ -119,6 +118,40 @@ img { display: block; max-width: 100%; }
 /* Button hover */
 .big-btn:hover { background: var(--fg) !important; color: #0A0A0A !important; border-color: var(--fg) !important; }
 
+/* ---- Section background alternation (black / green) ----
+   Green applied only when body has .accent-on (default on; the dev
+   Design Picker can toggle it off to preview the all-black version).
+   --section-bg controls the accent-section color independently from
+   --accent; text colors derive from --section-fg* (set by the picker,
+   with light-on-lime fallbacks here). */
+body.accent-on .section-accent { background: var(--section-bg, var(--accent)); }
+body.accent-on .section-accent .display,
+body.accent-on .section-accent h1,
+body.accent-on .section-accent h2,
+body.accent-on .section-accent h3 { color: var(--section-fg, #0A0A0A) !important; }
+body.accent-on .section-accent .eyebrow { color: var(--section-fg-faint, rgba(10, 10, 10, 0.55)) !important; }
+body.accent-on .section-accent p { color: var(--section-fg-dim, rgba(10, 10, 10, 0.78)) !important; }
+body.accent-on .section-accent label > div { color: var(--section-fg-faint, rgba(10, 10, 10, 0.55)) !important; }
+body.accent-on .section-accent input,
+body.accent-on .section-accent textarea {
+  color: var(--section-fg, #0A0A0A) !important;
+  border-bottom-color: var(--section-line, rgba(10, 10, 10, 0.3)) !important;
+}
+body.accent-on .section-accent input::placeholder,
+body.accent-on .section-accent textarea::placeholder { color: var(--section-fg-faint, rgba(10, 10, 10, 0.4)) !important; }
+/* Submit buttons flip to the foreground color so they read on the section bg */
+body.accent-on .section-accent button[type="submit"] {
+  background: var(--section-fg, #0A0A0A) !important;
+  color: var(--accent) !important;
+  border-color: var(--section-fg, #0A0A0A) !important;
+}
+body.accent-on .section-accent button[type="submit"]:hover { opacity: 0.85; }
+/* Accent-colored inline elements flip to the foreground color */
+body.accent-on .section-accent [data-accent-chip] { border-color: var(--section-fg, #0A0A0A) !important; color: var(--section-fg, #0A0A0A) !important; }
+body.accent-on .section-accent [data-accent-box]  { border-color: var(--section-fg, #0A0A0A) !important; }
+body.accent-on .section-accent [data-accent-icon] { background: var(--section-fg, #0A0A0A) !important; color: var(--accent) !important; }
+body.accent-on .section-accent [data-accent-fill] { border-color: var(--section-line, rgba(10, 10, 10, 0.25)) !important; }
+
 /* Social cells */
 .social-cell:hover { background: var(--accent); color: #0A0A0A; }
 .social-cell:hover .mono-ish { color: #0A0A0A !important; }
@@ -132,6 +165,8 @@ img { display: block; max-width: 100%; }
   .hero-grid { grid-template-columns: 1fr !important; }
   .hero-photo { order: -1; max-height: 55vh; }
   .videos-grid { grid-template-columns: 1fr !important; }
+  .videos-bento { grid-template-columns: repeat(2, 1fr) !important; }
+  .videos-bento .reveal[style*="span 2"] { grid-column: span 2 !important; }
   .bio-grid { grid-template-columns: 1fr !important; }
   .contact-grid { grid-template-columns: 1fr !important; }
   .contact-cell { border-right: none !important; border-bottom: 1px solid var(--line); }
@@ -147,4 +182,10 @@ img { display: block; max-width: 100%; }
   .video-mini { grid-template-columns: 120px 1fr !important; }
   .desktop-nav { display: none !important; }
   .mobile-toggle { display: inline-flex !important; }
+}
+
+@media (max-width: 600px) {
+  .videos-bento { grid-template-columns: 1fr !important; }
+  .videos-bento .reveal[style*="span 2"] { grid-column: span 1 !important; }
+  .videos-bento .reveal[style*="span 2 row"] { grid-row: span 1 !important; }
 }

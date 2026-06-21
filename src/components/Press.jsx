@@ -6,7 +6,7 @@ export default function Press() {
   const quoted = MC_PRESS.filter((p) => p.quote)
 
   return (
-    <Section id="press" eyebrow="07" title="Ils en parlent.">
+    <Section id="press" eyebrow="06" title="Ils en parlent">
       <div className="grid gap-12" style={{ gridTemplateColumns: '1fr', gap: 'clamp(40px, 6vw, 72px)' }}>
         <Reveal>
           <div className="press-quotes grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--line)' }}>

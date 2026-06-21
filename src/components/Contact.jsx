@@ -49,7 +49,7 @@ export default function Contact() {
   const [sent, setSent] = useState(false)
 
   return (
-    <Section id="contact" eyebrow="09" title="Contact.">
+    <Section id="contact" eyebrow="09" title="Contact">
       <div className="contact-grid grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: '1px solid var(--line)' }}>
         {/* Pros */}
         <div className="contact-cell" style={{ padding: 'clamp(28px, 4vw, 56px)', borderRight: '1px solid var(--line)', background: '#0D0D0D' }}>
