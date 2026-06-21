@@ -1,7 +1,4 @@
-import { useState, useEffect } from 'react'
-
-// Only shown when ?design=1 is in the URL (or in local dev with the env flag)
-const SHOW_IN_DEV = import.meta.env.DEV
+import { useState } from 'react'
 
 const ACCENT_PRESETS = [
   { label: 'Lime (actuel)',    value: '#B6FF3C' },
@@ -70,10 +67,6 @@ export default function ColorPicker() {
   const [bgAccent, setBgAccent] = useState('accent')
   const [sectionBg, setSectionBg] = useState(null) // null = follow accent
   const [customSection, setCustomSection] = useState('')
-
-  // Only render if ?design=1 or in dev mode
-  const shouldShow = SHOW_IN_DEV || new URLSearchParams(window.location.search).get('design') === '1'
-  if (!shouldShow) return null
 
   const applyAccent = (hex) => {
     setAccent(hex)
@@ -173,7 +166,7 @@ export default function ColorPicker() {
           flexDirection: 'column',
           gap: 2,
         }}
-        title="Design picker (dev only)"
+        title="Design picker"
       >
         <span>🎨</span>
       </button>
@@ -182,7 +175,7 @@ export default function ColorPicker() {
         <div style={{ color: '#fff', fontWeight: 700, fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
           Design Picker
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>Dev only — disparaît en prod</div>
+        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>Accent, police & fonds de section</div>
 
         {/* Accent color */}
         <span style={labelStyle}>Couleur accent</span>
