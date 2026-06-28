@@ -1,41 +1,39 @@
-import { handleUpload } from '@vercel/blob/client'
-import { readBody } from './_lib.js'
+import { put } from '@vercel/blob'
+import { isAuthed } from './_lib.js'
 
-// Client-upload handler. The browser calls @vercel/blob/client `upload()`
-// which negotiates a short-lived token here. We gate token creation on the
-// admin password passed via clientPayload.
+// Simple multipart upload: the browser sends a FormData POST,
+// we call Vercel Blob put() server-side and return the public URL.
+// No client-token negotiation needed.
+export const config = { api: { bodyParser: false } }
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const body = readBody(req)
+  if (!isAuthed(req)) {
+    return res.status(401).json({ error: 'Non autorisé.' })
+  }
 
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const expected = process.env.ADMIN_PASSWORD
-        if (!expected || clientPayload !== expected) {
-          throw new Error('Non autorisé')
-        }
-        return {
-          allowedContentTypes: [
-            'image/png', 'image/jpeg', 'image/jpg', 'image/webp',
-            'image/gif', 'image/avif', 'video/mp4', 'video/webm', 'video/quicktime',
-          ],
-          addRandomSuffix: true,
-          maximumSizeInBytes: 50 * 1024 * 1024,
-        }
-      },
-      onUploadCompleted: async () => {
-        // No-op; the client already has the URL. (Skipped on localhost.)
-      },
+    // Read raw body into a Buffer
+    const chunks = []
+    for await (const chunk of req) chunks.push(chunk)
+    const buf = Buffer.concat(chunks)
+
+    // Pull filename and content-type from headers set by the client
+    const filename = decodeURIComponent(req.headers['x-filename'] || 'upload')
+    const contentType = req.headers['content-type'] || 'application/octet-stream'
+
+    const blob = await put(filename, buf, {
+      access: 'public',
+      contentType,
+      addRandomSuffix: true,
     })
-    return res.status(200).json(jsonResponse)
+
+    return res.status(200).json({ url: blob.url })
   } catch (err) {
-    return res.status(400).json({ error: String(err?.message || err) })
+    return res.status(500).json({ error: String(err?.message || err) })
   }
 }

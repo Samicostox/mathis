@@ -1,5 +1,3 @@
-import { upload } from '@vercel/blob/client'
-
 const PW_KEY = 'mc_admin_pw'
 
 export function getStoredPassword() {
@@ -43,12 +41,19 @@ export async function saveConfig(config) {
   return true
 }
 
-// Uploads a file to Vercel Blob via the client-upload flow and returns its URL.
+// Uploads a file to Vercel Blob via our server-side /api/upload route.
+// Sends the raw bytes with filename + content-type as headers.
 export async function uploadFile(file) {
-  const result = await upload(file.name, file, {
-    access: 'public',
-    handleUploadUrl: '/api/upload',
-    clientPayload: getStoredPassword(),
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: {
+      'x-admin-password': getStoredPassword(),
+      'x-filename': encodeURIComponent(file.name),
+      'content-type': file.type || 'application/octet-stream',
+    },
+    body: file,
   })
-  return result.url
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Échec de l\'upload.')
+  return data.url
 }

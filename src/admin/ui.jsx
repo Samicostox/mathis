@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { uploadFile } from './api'
 
 const c = {
@@ -89,44 +89,114 @@ export function Toggle({ label, value, onChange }) {
 
 export function ImageField({ label, value, onChange, accept = 'image/*' }) {
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [err, setErr] = useState('')
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef(null)
 
-  const handle = async (e) => {
-    const file = e.target.files?.[0]
+  const doUpload = async (file) => {
     if (!file) return
-    setBusy(true); setErr('')
+    setBusy(true); setErr(''); setProgress(0)
+    // Fake progress tick so the UI feels responsive
+    const ticker = setInterval(() => setProgress((p) => Math.min(p + 8, 90)), 180)
     try {
       const url = await uploadFile(file)
+      clearInterval(ticker); setProgress(100)
       onChange(url)
+      setTimeout(() => { setBusy(false); setProgress(0) }, 600)
     } catch (ex) {
+      clearInterval(ticker); setBusy(false); setProgress(0)
       setErr(String(ex?.message || ex))
-    } finally {
-      setBusy(false)
     }
   }
 
+  const onFile = (e) => doUpload(e.target.files?.[0])
+  const onDrop = (e) => {
+    e.preventDefault(); setDragging(false)
+    doUpload(e.dataTransfer.files?.[0])
+  }
+
   const isVideo = value && /\.(mp4|webm|mov)(\?|$)/i.test(value)
+  const hasValue = !!value
 
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 18 }}>
       {label && <span style={labelStyle}>{label}</span>}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        {value && (
-          isVideo ? (
-            <video src={value} muted style={{ width: 96, height: 96, objectFit: 'cover', border: c.border, borderRadius: 4 }} />
-          ) : (
-            <img src={value} alt="" style={{ width: 96, height: 96, objectFit: 'cover', border: c.border, borderRadius: 4 }} />
-          )
+
+      {/* Drop zone */}
+      <div
+        onClick={() => !busy && inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        style={{
+          position: 'relative',
+          border: `2px dashed ${dragging ? c.accent : err ? '#FF6B6B' : hasValue ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)'}`,
+          borderRadius: 8,
+          background: dragging ? 'rgba(182,255,60,0.05)' : c.bgInput,
+          cursor: busy ? 'wait' : 'pointer',
+          overflow: 'hidden',
+          transition: 'border-color .15s, background .15s',
+          minHeight: hasValue ? 'auto' : 96,
+          display: 'flex',
+          flexDirection: hasValue ? 'row' : 'column',
+          alignItems: 'center',
+          justifyContent: hasValue ? 'flex-start' : 'center',
+          gap: 16,
+          padding: hasValue ? 12 : 20,
+        }}
+      >
+        {/* Progress bar overlay */}
+        {busy && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, height: 3, background: c.accent, width: `${progress}%`, transition: 'width .2s' }} />
         )}
-        <div style={{ flex: 1, minWidth: 180 }}>
-          <input type="file" accept={accept} onChange={handle} disabled={busy} style={{ fontSize: 13, color: c.dim }} />
-          {busy && <div style={{ fontSize: 12, color: c.accent, marginTop: 6 }}>Téléversement…</div>}
-          {err && <div style={{ fontSize: 12, color: '#FF6B6B', marginTop: 6 }}>{err}</div>}
-          {value && (
-            <button type="button" onClick={() => onChange(null)} style={ghostBtn}>Retirer</button>
-          )}
-        </div>
+
+        {hasValue ? (
+          <>
+            {/* Thumbnail */}
+            {isVideo ? (
+              <video src={value} muted style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+            ) : (
+              <img src={value} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: c.fg, fontFamily: 'Space Grotesk', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {value.split('/').pop()?.split('?')[0]}
+              </div>
+              <div style={{ fontSize: 11, color: c.dim, fontFamily: 'Space Grotesk' }}>
+                {busy ? `Remplacement… ${progress}%` : 'Cliquer ou glisser pour remplacer'}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChange(null) }}
+              style={{ background: 'rgba(255,80,80,0.15)', border: '1px solid rgba(255,80,80,0.35)', color: '#FF6B6B', padding: '6px 12px', fontSize: 11, cursor: 'pointer', borderRadius: 4, fontFamily: 'Space Grotesk', flexShrink: 0 }}
+            >
+              Retirer
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 28, opacity: 0.4 }}>↑</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 13, color: c.fg, fontFamily: 'Space Grotesk', marginBottom: 4 }}>
+                {busy ? `Téléversement… ${progress}%` : 'Cliquer ou glisser un fichier ici'}
+              </div>
+              <div style={{ fontSize: 11, color: c.dim, fontFamily: 'Space Grotesk' }}>
+                {accept === 'video/*' ? 'MP4, WebM, MOV' : 'JPG, PNG, WebP, GIF'}
+              </div>
+            </div>
+          </>
+        )}
       </div>
+
+      {err && (
+        <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,80,80,0.12)', border: '1px solid rgba(255,80,80,0.3)', borderRadius: 4, fontSize: 12, color: '#FF9090', fontFamily: 'Space Grotesk' }}>
+          ⚠ {err}
+        </div>
+      )}
+
+      <input ref={inputRef} type="file" accept={accept} onChange={onFile} disabled={busy} style={{ display: 'none' }} />
     </div>
   )
 }
