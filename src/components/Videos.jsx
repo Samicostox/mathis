@@ -12,18 +12,20 @@ const FORMAT_RATIO = {
   instagram: '1/1',
 }
 
-// Convert a platform share URL into an embeddable iframe src
-function getEmbedUrl(url) {
+// Returns { type: 'embed', src } for YouTube/TikTok,
+// { type: 'link', href } for Instagram (no clean embed possible),
+// or null for direct video files.
+function getPlatformAction(url) {
   if (!url) return null
-  // YouTube: youtube.com/watch?v=ID  or  youtu.be/ID  or  youtube.com/shorts/ID
+  // YouTube
   let m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/)
-  if (m) return `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0`
-  // Instagram post or reel
-  m = url.match(/instagram\.com\/(?:p|reel)\/([\w-]+)/)
-  if (m) return `https://www.instagram.com/p/${m[1]}/embed/`
+  if (m) return { type: 'embed', src: `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0` }
   // TikTok
   m = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/)
-  if (m) return `https://www.tiktok.com/embed/v2/${m[1]}`
+  if (m) return { type: 'embed', src: `https://www.tiktok.com/embed/v2/${m[1]}` }
+  // Instagram — no clean embed, open directly
+  m = url.match(/instagram\.com\/(?:p|reel)\/([\w-]+)/)
+  if (m) return { type: 'link', href: url }
   return null
 }
 
@@ -31,20 +33,23 @@ function VideoCard({ v, seed }) {
   const [open, setOpen] = useState(false)
   const videoRef = useRef(null)
 
-  const embedUrl = getEmbedUrl(v.url)
-  // For direct video files (no recognised platform), use hover preview
-  const isDirectVideo = v.url && !embedUrl
+  const action = getPlatformAction(v.url)
+  const isDirectVideo = v.url && !action
 
   const handleMouseEnter = () => {
-    if (isDirectVideo && videoRef.current) {
-      videoRef.current.play().catch(() => {})
-    }
+    if (isDirectVideo && videoRef.current) videoRef.current.play().catch(() => {})
   }
   const handleMouseLeave = () => {
     if (isDirectVideo && videoRef.current) {
       videoRef.current.pause()
       videoRef.current.currentTime = 0
     }
+  }
+
+  const handleClick = () => {
+    if (!action) return
+    if (action.type === 'embed') setOpen(true)
+    if (action.type === 'link') window.open(action.href, '_blank', 'noopener,noreferrer')
   }
 
   const ratio = FORMAT_RATIO[v.format] || '16/9'
@@ -55,7 +60,7 @@ function VideoCard({ v, seed }) {
       style={{ transition: 'transform .3s ease' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => embedUrl && setOpen(true)}
+      onClick={handleClick}
     >
       <div className="relative overflow-hidden" style={{ aspectRatio: ratio }}>
         {/* Poster (or placeholder) */}
@@ -75,16 +80,26 @@ function VideoCard({ v, seed }) {
           />
         )}
 
-        {/* Play button overlay */}
+        {/* Play / open overlay */}
         <div className="absolute inset-0 flex items-center justify-center"
           style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0) 50%)' }}
         >
-          <div
-            className="inline-flex items-center justify-center play-btn"
-            style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)', color: '#000', transition: 'transform .3s' }}
-          >
-            <Icon name="play" size={22} />
-          </div>
+          {action?.type === 'link' ? (
+            /* Instagram: external link icon */
+            <div
+              className="inline-flex items-center justify-center play-btn"
+              style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)', color: '#000', transition: 'transform .3s', fontSize: 22 }}
+            >
+              ↗
+            </div>
+          ) : (
+            <div
+              className="inline-flex items-center justify-center play-btn"
+              style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)', color: '#000', transition: 'transform .3s' }}
+            >
+              <Icon name="play" size={22} />
+            </div>
+          )}
         </div>
 
         {/* Tag badge */}
@@ -104,8 +119,8 @@ function VideoCard({ v, seed }) {
         )}
       </div>
 
-      {/* Lightbox embed — opens on click for platform videos */}
-      {open && embedUrl && (
+      {/* Lightbox embed — only for YouTube / TikTok */}
+      {open && action?.type === 'embed' && (
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={(e) => { e.stopPropagation(); setOpen(false) }}
@@ -115,7 +130,7 @@ function VideoCard({ v, seed }) {
             onClick={(e) => e.stopPropagation()}
           >
             <iframe
-              src={embedUrl}
+              src={action.src}
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
