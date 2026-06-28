@@ -14,16 +14,45 @@ export default function Gallery() {
     ? gallery.images
     : Array.from({ length: gallery.count || 8 }, () => null)
 
+  // Repeating bento rhythm: some tiles span 2 cols and/or 2 rows for a
+  // dynamic mosaic. Pattern length 6 keeps it balanced on a 4-col grid.
+  const bento = [
+    { col: 2, row: 2 }, // big square
+    { col: 1, row: 1 },
+    { col: 1, row: 1 },
+    { col: 1, row: 2 }, // tall
+    { col: 2, row: 1 }, // wide
+    { col: 1, row: 1 },
+  ]
+
   return (
     <Section id="gallery" eyebrow="09" title="Galerie" bg="var(--bg-2)" kicker="Scène, coulisses, tournées. Tout en noir et blanc.">
-      <div className="gallery-grid grid gap-2" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        {images.map((src, i) => (
-          <Reveal key={i} delay={i * 40}>
-            <button type="button" onClick={() => setOpen(i)} className="w-full block cursor-pointer" style={{ background: 'transparent', border: 'none', padding: 0 }}>
-              <Img src={src} label={`#${(i + 1).toString().padStart(2, '0')}`} seed={40 + i} ratio={i % 3 === 0 ? '4/5' : '1/1'} />
-            </button>
-          </Reveal>
-        ))}
+      <div className="gallery-bento">
+        {images.map((src, i) => {
+          const span = bento[i % bento.length]
+          return (
+            <Reveal
+              key={i}
+              delay={i * 40}
+              style={{ gridColumn: `span ${span.col}`, gridRow: `span ${span.row}` }}
+            >
+              <button
+                type="button"
+                onClick={() => setOpen(i)}
+                className="gallery-tile cursor-pointer"
+                style={{ background: 'transparent', border: 'none', padding: 0, width: '100%', height: '100%', display: 'block' }}
+              >
+                <Img
+                  src={src}
+                  label={`#${(i + 1).toString().padStart(2, '0')}`}
+                  seed={40 + i}
+                  ratio={undefined}
+                  style={{ height: '100%', aspectRatio: 'auto' }}
+                />
+              </button>
+            </Reveal>
+          )
+        })}
       </div>
 
       {open !== null && (
