@@ -12,23 +12,39 @@ const FORMAT_RATIO = {
   instagram: '1/1',
 }
 
+// Convert a platform share URL into an embeddable iframe src
+function getEmbedUrl(url) {
+  if (!url) return null
+  // YouTube: youtube.com/watch?v=ID  or  youtu.be/ID  or  youtube.com/shorts/ID
+  let m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/)
+  if (m) return `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0`
+  // Instagram post or reel
+  m = url.match(/instagram\.com\/(?:p|reel)\/([\w-]+)/)
+  if (m) return `https://www.instagram.com/p/${m[1]}/embed/`
+  // TikTok
+  m = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/)
+  if (m) return `https://www.tiktok.com/embed/v2/${m[1]}`
+  return null
+}
+
 function VideoCard({ v, seed }) {
-  const [playing, setPlaying] = useState(false)
+  const [open, setOpen] = useState(false)
   const videoRef = useRef(null)
 
+  const embedUrl = getEmbedUrl(v.url)
+  // For direct video files (no recognised platform), use hover preview
+  const isDirectVideo = v.url && !embedUrl
+
   const handleMouseEnter = () => {
-    if (v.url && videoRef.current) {
+    if (isDirectVideo && videoRef.current) {
       videoRef.current.play().catch(() => {})
-      setPlaying(true)
     }
   }
-
   const handleMouseLeave = () => {
-    if (videoRef.current) {
+    if (isDirectVideo && videoRef.current) {
       videoRef.current.pause()
       videoRef.current.currentTime = 0
     }
-    setPlaying(false)
   }
 
   const ratio = FORMAT_RATIO[v.format] || '16/9'
@@ -39,41 +55,29 @@ function VideoCard({ v, seed }) {
       style={{ transition: 'transform .3s ease' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={() => embedUrl && setOpen(true)}
     >
       <div className="relative overflow-hidden" style={{ aspectRatio: ratio }}>
-        {/* Poster (or placeholder) visible when not playing */}
-        <div style={{ position: 'absolute', inset: 0, opacity: playing ? 0 : 1, transition: 'opacity .3s' }}>
+        {/* Poster (or placeholder) */}
+        <div style={{ position: 'absolute', inset: 0 }}>
           <Img src={v.poster} label={v.tag.toUpperCase()} seed={seed} ratio={ratio} alt={v.title} />
         </div>
 
-        {/* Actual video for hover preview */}
-        {v.url && (
+        {/* Hover preview for direct video files */}
+        {isDirectVideo && (
           <video
             ref={videoRef}
             src={v.url}
             muted
             loop
             playsInline
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: playing ? 1 : 0,
-              transition: 'opacity .3s',
-            }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
 
-        {/* Overlays */}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0) 50%)',
-            opacity: playing ? 0 : 1,
-            transition: 'opacity .3s',
-          }}
+        {/* Play button overlay */}
+        <div className="absolute inset-0 flex items-center justify-center"
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0) 50%)' }}
         >
           <div
             className="inline-flex items-center justify-center play-btn"
@@ -83,22 +87,48 @@ function VideoCard({ v, seed }) {
           </div>
         </div>
 
-        {/* Tag badge — top left */}
-        <div
-          className="mono-ish absolute"
+        {/* Tag badge */}
+        <div className="mono-ish absolute"
           style={{ top: 14, left: 14, background: 'rgba(0,0,0,0.7)', color: 'var(--fg)', padding: '5px 10px', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase' }}
         >
           {v.tag}
         </div>
 
-        {/* Duration — bottom right */}
-        <div
-          className="mono-ish absolute"
-          style={{ bottom: 14, right: 14, background: 'rgba(0,0,0,0.7)', color: 'var(--fg)', padding: '5px 10px', fontSize: 11, letterSpacing: '0.08em', fontVariantNumeric: 'tabular-nums' }}
-        >
-          {v.duration}
-        </div>
+        {/* Duration */}
+        {v.duration && (
+          <div className="mono-ish absolute"
+            style={{ bottom: 14, right: 14, background: 'rgba(0,0,0,0.7)', color: 'var(--fg)', padding: '5px 10px', fontSize: 11, letterSpacing: '0.08em', fontVariantNumeric: 'tabular-nums' }}
+          >
+            {v.duration}
+          </div>
+        )}
       </div>
+
+      {/* Lightbox embed — opens on click for platform videos */}
+      {open && embedUrl && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { e.stopPropagation(); setOpen(false) }}
+        >
+          <div
+            style={{ position: 'relative', width: '90vw', maxWidth: 960, aspectRatio: ratio }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <iframe
+              src={embedUrl}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+            />
+            <button
+              onClick={() => setOpen(false)}
+              style={{ position: 'absolute', top: -40, right: 0, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

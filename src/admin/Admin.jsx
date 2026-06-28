@@ -228,7 +228,7 @@ export default function Admin() {
           <ObjectList
             value={draft.videos}
             onChange={(v) => up('videos', v)}
-            blank={{ title: '', tag: '', duration: '', views: '', format: 'youtube', url: null, poster: null }}
+            blank={{ title: '', tag: '', duration: '', views: '', format: 'youtube', url: '', poster: null }}
             fields={[
               { key: 'title', label: 'Titre' },
               { key: 'tag', label: 'Tag (ex: Scène)' },
@@ -236,7 +236,7 @@ export default function Admin() {
               { key: 'views', label: 'Vues (ex: 840k)' },
               { key: 'format', label: 'Format', type: 'select', options: VIDEO_FORMATS },
               { key: 'poster', label: 'Vignette (image)', type: 'image' },
-              { key: 'url', label: 'Vidéo aperçu au survol (mp4)', type: 'image', accept: 'video/*' },
+              { key: 'url', label: 'Lien YouTube / Instagram / TikTok' },
             ]}
           />
         </Card>

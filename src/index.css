@@ -45,7 +45,13 @@ html, body {
   overflow-x: hidden;
 }
 
+html {
+  background: #0A0A0A;
+  min-height: 100%;
+}
+
 body {
+  background: #0A0A0A;
   font-family: "Inter", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.55;
