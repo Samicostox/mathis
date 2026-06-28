@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useConfigState } from '../config/ConfigContext'
+import { useConfigState, updateConfigCache } from '../config/ConfigContext'
 import { DEFAULT_CONFIG } from '../config/defaults'
 import { login, saveConfig, getStoredPassword, clearPassword } from './api'
 import {
@@ -125,6 +125,7 @@ export default function Admin() {
     setSaveState('saving'); setSaveErr('')
     try {
       await saveConfig(draft)
+      updateConfigCache(draft)   // update localStorage so public site is instant on next load
       setSaveState('saved')
       setTimeout(() => setSaveState('idle'), 2500)
     } catch (ex) {
