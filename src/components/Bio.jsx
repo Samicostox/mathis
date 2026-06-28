@@ -1,15 +1,13 @@
 import Section from './Section'
 import Reveal from './Reveal'
-
-const BIO_PARAGRAPHS = [
-  "J'ai commencé le stand-up et la vidéo en 2023. Trois ans plus tard, vous êtes de plus en plus à me suivre sur scène et à regarder ce que je fais en ligne.",
-  "Assez pour que je puisse quitter mon travail et devenir humoriste à temps plein. Sincèrement, merci.",
-  "Je travaille sur un premier spectacle. Il n'a pas d'autre prétention que de faire rire — mais j'espère que vous y trouverez un peu plus.",
-]
+import { useConfig } from '../config/ConfigContext'
 
 export default function Bio() {
+  const { bio } = useConfig()
+  const paragraphs = bio.paragraphs || []
+
   return (
-    <Section id="bio" eyebrow="07" title="Bio">
+    <Section id="bio" eyebrow="08" title="Bio">
       <Reveal>
         {/* Large accent quote — dominates the section */}
         <p
@@ -25,12 +23,12 @@ export default function Bio() {
             letterSpacing: '-0.02em',
           }}
         >
-          {BIO_PARAGRAPHS[0]}
+          {paragraphs[0]}
         </p>
       </Reveal>
       <Reveal delay={100}>
         <div style={{ maxWidth: 640, display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {BIO_PARAGRAPHS.slice(1).map((p, i) => (
+          {paragraphs.slice(1).map((p, i) => (
             <p
               key={i}
               style={{

@@ -1,19 +1,21 @@
 import { useState } from 'react'
+import { useConfig } from '../config/ConfigContext'
 import Section from './Section'
 import Reveal from './Reveal'
 import Icon from './Icon'
 
 export default function Newsletter() {
+  const { newsletter } = useConfig()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
   return (
     <Section
       id="newsletter"
-      eyebrow="05"
+      eyebrow="06"
       tone="accent"
       title={<>La newsletter,<br />sans spam.</>}
-      kicker="Une dizaine d'envois par an, uniquement quand il y a du neuf — dates, vidéos, spectacles. Double opt-in, RGPD."
+      kicker={newsletter.kicker}
     >
       <Reveal>
         {!sent ? (

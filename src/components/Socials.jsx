@@ -1,12 +1,13 @@
-import { MC_SOCIAL } from '../data'
+import { useConfig } from '../config/ConfigContext'
 import Section from './Section'
 import Icon from './Icon'
 
 export default function Socials() {
+  const { socials } = useConfig()
   return (
-    <Section id="socials" eyebrow="04" title="Ailleurs" bg="var(--bg-2)">
+    <Section id="socials" eyebrow="05" title="Ailleurs" bg="var(--bg-2)">
       <div className="socials-grid grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, border: '1px solid var(--line)' }}>
-        {MC_SOCIAL.map((s, i) => (
+        {socials.map((s, i) => (
           <a
             key={s.name}
             href={s.url}
@@ -15,7 +16,7 @@ export default function Socials() {
             className="social-cell flex flex-col justify-between"
             style={{
               padding: '40px 28px',
-              borderRight: i < MC_SOCIAL.length - 1 ? '1px solid var(--line)' : 'none',
+              borderRight: i < socials.length - 1 ? '1px solid var(--line)' : 'none',
               gap: 28, transition: 'background .2s, color .2s', minHeight: 200,
             }}
           >

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { MC_UPCOMING } from '../data'
+import { useConfig } from '../config/ConfigContext'
 import Reveal from './Reveal'
 import BigButton from './BigButton'
 
@@ -85,20 +85,21 @@ function DateRow({ item }) {
 const INITIAL_LIMIT = 8
 
 export default function Dates() {
+  const { dates } = useConfig()
   const [filter, setFilter] = useState('all')
   const [showAll, setShowAll] = useState(false)
 
   const filtered = useMemo(() => {
-    if (filter === 'paris') return MC_UPCOMING.filter((d) => d.city === 'Paris')
-    if (filter === 'tour')  return MC_UPCOMING.filter((d) => d.city !== 'Paris')
-    return MC_UPCOMING
-  }, [filter])
+    if (filter === 'paris') return dates.filter((d) => d.city === 'Paris')
+    if (filter === 'tour')  return dates.filter((d) => d.city !== 'Paris')
+    return dates
+  }, [filter, dates])
 
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_LIMIT)
   const hasMore = filtered.length > INITIAL_LIMIT && !showAll
 
-  const parisCount = MC_UPCOMING.filter((d) => d.city === 'Paris').length
-  const tourCount  = MC_UPCOMING.length - parisCount
+  const parisCount = dates.filter((d) => d.city === 'Paris').length
+  const tourCount  = dates.length - parisCount
 
   const Toggle = ({ value, label, n }) => (
     <button
@@ -142,7 +143,7 @@ export default function Dates() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2" style={{ flexShrink: 0 }}>
-              <Toggle value="all"   label="Toutes"  n={MC_UPCOMING.length} />
+              <Toggle value="all"   label="Toutes"  n={dates.length} />
               <Toggle value="paris" label="Paris"   n={parisCount} />
               <Toggle value="tour"  label="Tournée" n={tourCount} />
             </div>

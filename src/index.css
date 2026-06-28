@@ -25,6 +25,13 @@
   --container: 1360px;
   --pad-x: clamp(20px, 4vw, 56px);
   --pad-y: clamp(80px, 10vw, 160px);
+
+  /* Section accent background — Crème by default, overridable via Design Picker */
+  --section-bg: #EDE7D9;
+  --section-fg: #0A0A0A;
+  --section-fg-dim: rgba(10, 10, 10, 0.72);
+  --section-fg-faint: rgba(10, 10, 10, 0.48);
+  --section-line: rgba(10, 10, 10, 0.22);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -168,6 +175,7 @@ body.accent-on .section-accent [data-accent-fill] { border-color: var(--section-
   .videos-bento { grid-template-columns: repeat(2, 1fr) !important; }
   .videos-bento .reveal[style*="span 2"] { grid-column: span 2 !important; }
   .bio-grid { grid-template-columns: 1fr !important; }
+  .show-grid { grid-template-columns: 1fr !important; }
   .contact-grid { grid-template-columns: 1fr !important; }
   .contact-cell { border-right: none !important; border-bottom: 1px solid var(--line); }
   .socials-grid { grid-template-columns: repeat(2, 1fr) !important; }

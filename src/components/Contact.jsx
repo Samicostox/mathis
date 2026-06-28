@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MC_CONTACTS } from '../data'
+import { useConfig } from '../config/ConfigContext'
 import Section from './Section'
 import BigButton from './BigButton'
 import Icon from './Icon'
@@ -45,11 +45,12 @@ function EmailRow({ person }) {
 }
 
 export default function Contact() {
+  const { contacts } = useConfig()
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
 
   return (
-    <Section id="contact" eyebrow="09" title="Contact">
+    <Section id="contact" eyebrow="10" title="Contact">
       <div className="contact-grid grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 0, border: '1px solid var(--line)' }}>
         {/* Pros */}
         <div className="contact-cell" style={{ padding: 'clamp(28px, 4vw, 56px)', borderRight: '1px solid var(--line)', background: '#0D0D0D' }}>
@@ -58,7 +59,7 @@ export default function Contact() {
           <p style={{ color: 'var(--fg-dim)', maxWidth: 380, margin: '0 0 32px' }}>
             Ni formulaire ni standard. Écris à la bonne personne, réponse sous 48h.
           </p>
-          {[...MC_CONTACTS.booking, ...MC_CONTACTS.press].map((p) => <EmailRow key={p.email} person={p} />)}
+          {[...(contacts.booking || []), ...(contacts.press || [])].map((p) => <EmailRow key={p.email} person={p} />)}
         </div>
 
         {/* Fans */}

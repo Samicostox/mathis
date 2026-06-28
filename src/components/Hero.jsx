@@ -1,8 +1,10 @@
 import Reveal from './Reveal'
 import BigButton from './BigButton'
-import { MC_ANNOUNCEMENTS, MC_TICKER } from '../data'
+import { useConfig } from '../config/ConfigContext'
 
 export default function Hero() {
+  const { hero, ticker } = useConfig()
+
   return (
     <section
       id="top"
@@ -12,14 +14,14 @@ export default function Hero() {
       {/* Full-bleed background image — lighter overlay so photo breathes */}
       <div className="absolute inset-0 overflow-hidden">
         <img
-          src="/780425_8.jpg"
+          src={hero.image}
           alt=""
           aria-hidden="true"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            objectPosition: 'center 20%',
+            objectPosition: hero.imagePosition || 'center 20%',
             display: 'block',
             filter: 'grayscale(1) contrast(1.05)',
           }}
@@ -41,10 +43,10 @@ export default function Hero() {
         <div style={{ maxWidth: 'var(--container)', margin: '0 auto', width: '100%', padding: '0 var(--pad-x) clamp(48px, 7vw, 80px)' }}>
 
           {/* Announcements — up to 3 green-dot lines */}
-          {MC_ANNOUNCEMENTS.length > 0 && (
+          {hero.announcements?.length > 0 && (
             <Reveal>
               <div style={{ marginBottom: 28, display: 'flex', flexDirection: 'column', gap: 9 }}>
-                {MC_ANNOUNCEMENTS.map((line, i) => (
+                {hero.announcements.map((line, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-3"
@@ -78,29 +80,19 @@ export default function Hero() {
                 textShadow: '0 2px 30px rgba(0,0,0,0.4)',
               }}
             >
-              <span className="block">Mathis</span>
-              <span className="block" style={{ color: 'var(--accent)' }}>Charbonnier</span>
+              <span className="block">{hero.firstName}</span>
+              <span className="block" style={{ color: 'var(--accent)' }}>{hero.lastName}</span>
             </h1>
           </Reveal>
 
           <Reveal delay={180}>
-            <p style={{
-              fontFamily: 'Space Grotesk, sans-serif',
-              fontSize: 'clamp(16px, 1.4vw, 20px)',
-              lineHeight: 1.45,
-              maxWidth: 420,
-              margin: '0 0 40px',
-              color: 'var(--fg)',
-              textShadow: '0 1px 12px rgba(0,0,0,0.5)',
-            }}>
-              Humoriste. Scène. Vidéos.
-            </p>
-          </Reveal>
-
-          <Reveal delay={260}>
             <div className="flex flex-wrap gap-4">
-              <BigButton href="#dates" icon="arrow-right">Les prochaines dates</BigButton>
-              <BigButton href="#videos" variant="outline" icon="play">Mes vidéos</BigButton>
+              {hero.ctaPrimary?.label && (
+                <BigButton href={hero.ctaPrimary.href} icon="arrow-right">{hero.ctaPrimary.label}</BigButton>
+              )}
+              {hero.ctaSecondary?.label && (
+                <BigButton href={hero.ctaSecondary.href} variant="outline" icon="play">{hero.ctaSecondary.label}</BigButton>
+              )}
             </div>
           </Reveal>
         </div>
@@ -119,7 +111,7 @@ export default function Hero() {
           <div className="ticker-track" style={{ display: 'inline-flex', gap: 48, padding: '18px 0', whiteSpace: 'nowrap' }}>
             {[0, 1].map((i) => (
               <span key={i} style={{ display: 'inline-flex', gap: 48 }}>
-                {MC_TICKER.map((item, j) => (
+                {ticker.map((item, j) => (
                   <span key={j} style={{ color: item.accent ? 'var(--accent)' : 'var(--fg-dim)' }}>
                     {item.text}
                   </span>

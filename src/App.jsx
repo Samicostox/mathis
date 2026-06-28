@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Dates from './components/Dates'
+import Show from './components/Show'
 import AskCity from './components/AskCity'
 import Videos from './components/Videos'
 import Socials from './components/Socials'
@@ -31,14 +32,15 @@ export default function App() {
       <main>
         <Hero />
         {/* 01 */} <Dates />
-        {/* 02 */} <AskCity />
-        {/* 03 */} <Videos />
-        {/* 04 */} <Socials />
-        {/* 05 */} <Newsletter />
-        {/* 06 */} <Press />
-        {/* 07 */} <Bio />
-        {/* 08 */} <Gallery />
-        {/* 09 */} <Contact />
+        {/* 02 */} <Show />
+        {/* 03 */} <AskCity />
+        {/* 04 */} <Videos />
+        {/* 05 */} <Socials />
+        {/* 06 */} <Newsletter />
+        {/* 07 */} <Press />
+        {/* 08 */} <Bio />
+        {/* 09 */} <Gallery />
+        {/* 10 */} <Contact />
       </main>
       <Footer />
       <EmailPopup />

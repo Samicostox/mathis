@@ -47,7 +47,7 @@ export default function AskCity() {
   return (
     <Section
       id="demande-ville"
-      eyebrow="02"
+      eyebrow="03"
       tone="accent"
       title={<>Demande ta<br />ville</>}
       kicker="Pas de date chez toi ? Dis-moi où. Je t'écris dès que je passe."

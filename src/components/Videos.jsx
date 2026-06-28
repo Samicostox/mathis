@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react'
-import { MC_VIDEOS } from '../data'
+import { useConfig } from '../config/ConfigContext'
 import Section from './Section'
 import Reveal from './Reveal'
 import Icon from './Icon'
-import PhotoPlaceholder from './PhotoPlaceholder'
+import Img from './Img'
 
 // Aspect ratios per format
 const FORMAT_RATIO = {
@@ -41,9 +41,9 @@ function VideoCard({ v, seed }) {
       onMouseLeave={handleMouseLeave}
     >
       <div className="relative overflow-hidden" style={{ aspectRatio: ratio }}>
-        {/* Placeholder visible when not playing */}
+        {/* Poster (or placeholder) visible when not playing */}
         <div style={{ position: 'absolute', inset: 0, opacity: playing ? 0 : 1, transition: 'opacity .3s' }}>
-          <PhotoPlaceholder label={v.tag.toUpperCase()} seed={seed} ratio={ratio} />
+          <Img src={v.poster} label={v.tag.toUpperCase()} seed={seed} ratio={ratio} alt={v.title} />
         </div>
 
         {/* Actual video for hover preview */}
@@ -104,10 +104,11 @@ function VideoCard({ v, seed }) {
 }
 
 export default function Videos() {
+  const { videos } = useConfig()
   return (
     <Section
       id="videos"
-      eyebrow="03"
+      eyebrow="04"
       title="Vidéos"
       kicker="Quelques trucs marrants."
     >
@@ -128,7 +129,7 @@ export default function Videos() {
             alignItems: 'start',
           }}
         >
-          {MC_VIDEOS.map((v, i) => {
+          {videos.map((v, i) => {
             const spanStyle =
               v.format === 'youtube'
                 ? { gridColumn: 'span 2' }

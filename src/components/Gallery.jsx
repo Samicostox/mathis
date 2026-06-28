@@ -1,20 +1,26 @@
 import { useState } from 'react'
-import { MC_GALLERY_COUNT } from '../data'
+import { useConfig } from '../config/ConfigContext'
 import Section from './Section'
 import Reveal from './Reveal'
-import PhotoPlaceholder from './PhotoPlaceholder'
+import Img from './Img'
 import Icon from './Icon'
 
 export default function Gallery() {
+  const { gallery } = useConfig()
   const [open, setOpen] = useState(null)
 
+  // Use uploaded images if present, otherwise N placeholders.
+  const images = gallery.images?.length
+    ? gallery.images
+    : Array.from({ length: gallery.count || 8 }, () => null)
+
   return (
-    <Section id="gallery" eyebrow="08" title="Galerie" bg="var(--bg-2)" kicker="Scène, coulisses, tournées. Tout en noir et blanc.">
+    <Section id="gallery" eyebrow="09" title="Galerie" bg="var(--bg-2)" kicker="Scène, coulisses, tournées. Tout en noir et blanc.">
       <div className="gallery-grid grid gap-2" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        {Array.from({ length: MC_GALLERY_COUNT }).map((_, i) => (
+        {images.map((src, i) => (
           <Reveal key={i} delay={i * 40}>
             <button type="button" onClick={() => setOpen(i)} className="w-full block cursor-pointer" style={{ background: 'transparent', border: 'none', padding: 0 }}>
-              <PhotoPlaceholder label={`#${(i + 1).toString().padStart(2, '0')}`} seed={40 + i} ratio={i % 3 === 0 ? '4/5' : '1/1'} />
+              <Img src={src} label={`#${(i + 1).toString().padStart(2, '0')}`} seed={40 + i} ratio={i % 3 === 0 ? '4/5' : '1/1'} />
             </button>
           </Reveal>
         ))}
@@ -27,7 +33,7 @@ export default function Gallery() {
           style={{ background: 'rgba(0,0,0,0.92)', padding: '5vw' }}
         >
           <div style={{ maxWidth: 1200, width: '100%', maxHeight: '90vh' }}>
-            <PhotoPlaceholder label={`#${(open + 1).toString().padStart(2, '0')}`} seed={40 + open} ratio="3/2" />
+            <Img src={images[open]} label={`#${(open + 1).toString().padStart(2, '0')}`} seed={40 + open} ratio="3/2" />
           </div>
           <button
             onClick={() => setOpen(null)}
