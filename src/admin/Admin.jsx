@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useConfigState, updateConfigCache } from '../config/ConfigContext'
 import { DEFAULT_CONFIG } from '../config/defaults'
 import { login, saveConfig, getStoredPassword, clearPassword } from './api'
@@ -6,6 +6,84 @@ import {
   TextField, TextArea, Select, Toggle, ImageField, StringList, Card,
   labelStyle, ghostBtn, addBtn, palette as c,
 } from './ui.jsx'
+
+const SECTION_LABELS = {
+  dates:      'Dates',
+  show:       'Le Spectacle',
+  askCity:    'Demande ta ville',
+  videos:     'Vidéos',
+  socials:    'Ailleurs',
+  newsletter: 'Newsletter',
+  press:      'Ils en parlent',
+  bio:        'Bio',
+  gallery:    'Galerie',
+  contact:    'Contact',
+}
+
+function SectionOrderEditor({ value, onChange }) {
+  const order = Array.isArray(value) && value.length ? value : DEFAULT_CONFIG.sectionOrder
+  const [dragging, setDragging] = useState(null)
+  const dragOver = useRef(null)
+
+  const move = (from, to) => {
+    if (from === to) return
+    const next = [...order]
+    const [item] = next.splice(from, 1)
+    next.splice(to, 0, item)
+    onChange(next)
+  }
+
+  const shift = (i, dir) => move(i, i + dir)
+
+  const rowStyle = (isDragging) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '10px 12px',
+    marginBottom: 4,
+    background: isDragging ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    cursor: 'grab',
+    userSelect: 'none',
+    opacity: isDragging ? 0.4 : 1,
+    transition: 'background .15s',
+  })
+
+  return (
+    <div>
+      {order.map((key, i) => (
+        <div
+          key={key}
+          draggable
+          onDragStart={() => setDragging(i)}
+          onDragEnter={() => { dragOver.current = i }}
+          onDragEnd={() => { move(dragging, dragOver.current); setDragging(null) }}
+          onDragOver={(e) => e.preventDefault()}
+          style={rowStyle(dragging === i)}
+        >
+          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontVariantNumeric: 'tabular-nums', minWidth: 20 }}>
+            {(i + 1).toString().padStart(2, '0')}
+          </span>
+          <span style={{ color: '#fff', fontSize: 13, flex: 1 }}>
+            {SECTION_LABELS[key] || key}
+          </span>
+          <button
+            type="button"
+            onClick={() => shift(i, -1)}
+            disabled={i === 0}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: i === 0 ? 'default' : 'pointer', fontSize: 16, padding: '0 4px', opacity: i === 0 ? 0.2 : 1 }}
+          >↑</button>
+          <button
+            type="button"
+            onClick={() => shift(i, 1)}
+            disabled={i === order.length - 1}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: i === order.length - 1 ? 'default' : 'pointer', fontSize: 16, padding: '0 4px', opacity: i === order.length - 1 ? 0.2 : 1 }}
+          >↓</button>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const STATUS_OPTIONS = [
   { value: '', label: '— aucun —' },
@@ -18,6 +96,23 @@ const VIDEO_FORMATS = [
   { value: 'short', label: 'Short (9:16)' },
   { value: 'instagram', label: 'Carré (1:1)' },
 ]
+
+// Extract YouTube video ID from common URL formats
+function youtubeId(url) {
+  if (!url) return null
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/)
+  return m ? m[1] : null
+}
+
+// When the URL field changes on a video row, auto-fill poster from YouTube thumbnail
+function onVideoFieldChange(key, value, row) {
+  if (key !== 'url') return null
+  const id = youtubeId(value)
+  if (!id) return null
+  // Only fill poster if it's empty — don't overwrite a manual upload
+  if (row.poster) return null
+  return { poster: `https://img.youtube.com/vi/${id}/maxresdefault.jpg` }
+}
 const ICON_OPTIONS = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'tiktok', label: 'TikTok' },
@@ -26,9 +121,16 @@ const ICON_OPTIONS = [
 ]
 
 // Generic list-of-objects editor.
-function ObjectList({ label, value, onChange, fields, blank }) {
+function ObjectList({ label, value, onChange, fields, blank, onRowFieldChange }) {
   const list = value || []
-  const update = (i, key, v) => onChange(list.map((row, j) => (j === i ? { ...row, [key]: v } : row)))
+  const update = (i, key, v) => {
+    const updatedRow = { ...list[i], [key]: v }
+    if (onRowFieldChange) {
+      const extra = onRowFieldChange(key, v, updatedRow)
+      if (extra) Object.assign(updatedRow, extra)
+    }
+    onChange(list.map((row, j) => (j === i ? updatedRow : row)))
+  }
   const remove = (i) => onChange(list.filter((_, j) => j !== i))
   const add = () => onChange([...list, { ...blank }])
   const move = (i, dir) => {
@@ -228,6 +330,7 @@ export default function Admin() {
           <ObjectList
             value={draft.videos}
             onChange={(v) => up('videos', v)}
+            onRowFieldChange={onVideoFieldChange}
             blank={{ title: '', tag: '', duration: '', views: '', format: 'youtube', url: '', poster: null }}
             fields={[
               { key: 'title', label: 'Titre' },
@@ -309,6 +412,16 @@ export default function Admin() {
               { key: 'role', label: 'Rôle' },
               { key: 'email', label: 'Email' },
             ]}
+          />
+        </Card>
+
+        <Card title="Ordre des sections">
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, marginBottom: 16 }}>
+            Glisse les lignes pour changer l'ordre d'affichage sur le site.
+          </p>
+          <SectionOrderEditor
+            value={draft.sectionOrder}
+            onChange={(v) => up('sectionOrder', v)}
           />
         </Card>
 

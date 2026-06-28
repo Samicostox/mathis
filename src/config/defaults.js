@@ -100,6 +100,10 @@ export const DEFAULT_CONFIG = {
       { name: 'Sandra Vidal', role: 'Attachée de presse', email: 'presse@mathischarbonnier.com' },
     ],
   },
+
+  // Section display order — keys match the SECTIONS map in App.jsx.
+  // Any key missing here is appended at the end as a safety fallback.
+  sectionOrder: ['dates', 'show', 'askCity', 'videos', 'socials', 'newsletter', 'press', 'bio', 'gallery', 'contact'],
 }
 
 // Shallow merge per top-level section so a partial saved config still

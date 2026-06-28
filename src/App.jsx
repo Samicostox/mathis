@@ -1,4 +1,6 @@
 import { useEffect } from 'react'
+import { useConfig } from './config/ConfigContext'
+import { DEFAULT_CONFIG } from './config/defaults'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Dates from './components/Dates'
@@ -16,16 +18,38 @@ import EmailPopup from './components/EmailPopup'
 import ColorPicker from './components/ColorPicker'
 import Loader from './components/Loader'
 
+const SECTIONS = {
+  dates:      <Dates />,
+  show:       <Show />,
+  askCity:    <AskCity />,
+  videos:     <Videos />,
+  socials:    <Socials />,
+  newsletter: <Newsletter />,
+  press:      <Press />,
+  bio:        <Bio />,
+  gallery:    <Gallery />,
+  contact:    <Contact />,
+}
+
+const DEFAULT_ORDER = DEFAULT_CONFIG.sectionOrder
+
 export default function App() {
+  const { sectionOrder } = useConfig()
+
   useEffect(() => {
     const style = document.createElement('style')
     style.id = 'photo-treatment'
     style.textContent = '.photo { filter: grayscale(1) contrast(1.05); }'
     document.head.appendChild(style)
-    // Green section alternation on by default (Design Picker can toggle off)
     document.body.classList.add('accent-on')
     return () => style.remove()
   }, [])
+
+  // Build the final ordered list: use config order, then append any keys
+  // not included (safety net so no section ever disappears by accident).
+  const order = Array.isArray(sectionOrder) && sectionOrder.length
+    ? [...sectionOrder, ...DEFAULT_ORDER.filter((k) => !sectionOrder.includes(k))]
+    : DEFAULT_ORDER
 
   return (
     <div>
@@ -33,20 +57,11 @@ export default function App() {
       <Header />
       <main>
         <Hero />
-        {/* 01 */} <Dates />
-        {/* 02 */} <Show />
-        {/* 03 */} <AskCity />
-        {/* 04 */} <Videos />
-        {/* 05 */} <Socials />
-        {/* 06 */} <Newsletter />
-        {/* 07 */} <Press />
-        {/* 08 */} <Bio />
-        {/* 09 */} <Gallery />
-        {/* 10 */} <Contact />
+        {order.map((key) => SECTIONS[key] ? <div key={key}>{SECTIONS[key]}</div> : null)}
       </main>
       <Footer />
       <EmailPopup />
-      <ColorPicker />
+      {import.meta.env.DEV && <ColorPicker />}
     </div>
   )
 }
