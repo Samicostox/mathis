@@ -22,7 +22,7 @@ export default function Newsletter() {
           <form
             data-accent-fill
             onSubmit={(e) => { e.preventDefault(); if (email) setSent(true) }}
-            className="grid"
+            className="grid newsletter-form"
             style={{ gridTemplateColumns: '1fr auto', border: '1px solid var(--line)', maxWidth: 720 }}
           >
             <input

@@ -216,4 +216,14 @@ body.accent-on .section-accent [data-accent-fill] { border-color: var(--section-
   .videos-bento { grid-template-columns: 1fr !important; }
   .videos-bento .reveal[style*="span 2"] { grid-column: span 1 !important; }
   .videos-bento .reveal[style*="span 2 row"] { grid-row: span 1 !important; }
+
+  /* Socials: single column on small screens so cells are all the same height */
+  .socials-grid { grid-template-columns: 1fr !important; }
+  .socials-grid .social-cell { border-right: none !important; border-bottom: 1px solid var(--line) !important; }
+  .socials-grid .social-cell:last-child { border-bottom: none !important; }
+
+  /* Newsletter: stack input + button vertically */
+  .newsletter-form { grid-template-columns: 1fr !important; }
+  .newsletter-form input  { padding: 20px !important; }
+  .newsletter-form button { padding: 18px 24px !important; justify-content: center; border-top: 1px solid var(--line); }
 }
